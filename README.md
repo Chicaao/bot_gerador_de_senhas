@@ -1,0 +1,1 @@
+# bot_gerador_de_senhas
