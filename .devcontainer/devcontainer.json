@@ -22,7 +22,7 @@
                 "ms-toolsai.jupyter",// Se você usa Jupyter notebooks (opcional)
                 "esbenp.prettier-vscode", // Formatador de código (opcional, mas bom)
                 "ms-vscode.sublime-keybinds", // Se você gosta de atalhos do Sublime Text (opcional)
-                "Github.copilot", // Se você usa GitHub Copilot (opcional)
+                "GitHub.copilot", // Se você usa GitHub Copilot (opcional)
                 "ms-vscode.vscode-intellicode",
                 "njpwerner.autodocstring"
             ]
