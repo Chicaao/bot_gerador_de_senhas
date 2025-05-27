@@ -1,7 +1,3 @@
-Certo, aqui está o conteúdo do README.md pronto para você copiar e colar diretamente no seu arquivo. É só criar um arquivo chamado README.md na raiz do seu projeto e colar tudo isso lá!
-
-Markdown
-
 # Password Manager Bot 🔑
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
