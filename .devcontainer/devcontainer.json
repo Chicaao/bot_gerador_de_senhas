@@ -1,0 +1,32 @@
+{
+    "name":"Python Password Manager Bot",
+    "image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
+    "features": {
+        "ghcr.io/devcontainers/features/apt-get:1":{
+            "packages": "tk"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.pylintEnabled": true,
+                "python.linting.enabled": true,
+                "python.formatting.provider": "black",
+                "editor.formatOnSave": true
+
+            },
+            "extensions": [
+                "ms-python.python", // Extensão oficial do Python
+                "ms-python.vscode-pylance",  // Servidor de linguagem Pylance para linting e auto-complete
+                "ms-toolsai.jupyter",// Se você usa Jupyter notebooks (opcional)
+                "esbenp.prettier-vscode", // Formatador de código (opcional, mas bom)
+                "ms-vscode.sublime-keybinds", // Se você gosta de atalhos do Sublime Text (opcional)
+                "Github.copilot", // Se você usa GitHub Copilot (opcional)
+                "ms-vscode.vscode-intellicode",
+                "njpwerner.autodocstring"
+            ]
+        }
+    },
+    "postCreateCommand": "pip install -r requirements.txt || true"
+}

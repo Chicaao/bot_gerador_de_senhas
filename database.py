@@ -1,6 +1,12 @@
 import sqlite3
 import hashlib
 import contextlib
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+import base64
+import os
 
 DATABASE_NAME = 'password_bot.db'
 
@@ -23,6 +29,28 @@ def get_db_cursor():
     finally: 
         if conn:
             conn.close() #Verifique se a conexão está fechada
+
+# --- Funcçoes de Segurança e Criptografia ---
+
+def hash_password(password):
+    '''Gera um hash SHA256 da senha mestra do usuário.'''
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def derive_key_from_master_password(master_password, salt):
+    """
+        Deriva uma chave de criptografia Fernet da senha mestra do usuário e de um sal.      
+    """
+    kdf_instance = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf_instance.derive(master_password.encode()))
+    return key
+
+# --- Funções de Banco de Dados ---
 
 def create_tables():
     """Cria as tabelas de usuários e senhas se elas não existirem."""
@@ -48,19 +76,18 @@ def create_tables():
         '''
         )
 
-def hash_password(password):
-    """Gera um hash SHA256 da senha."""
-    return hashlib.sha256(password.encode()).hexdigest()
+# O commit e close são tratados pelo gerenciador de contexto
 
-def register_user(username, password):
+def register_user(username, master_password):
     """
     Cadastra um novo usuário no banco de dados.
     Retorna True em sucesso, False em falha (usuário já existe).
     """
     try:
         with get_db_cursor() as cursor:
-            password_hash = hash_password(password)
-            cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+            password_hash = hash_password(master_password)
+            salt = os.urandom(16)
+            cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash, salt.hex()))
             return True
     except sqlite3.IntegrityError:
         print(f"Erro: Usuário '{username}' já existe.")
@@ -69,24 +96,25 @@ def register_user(username, password):
         print(f"Ocorreu um erro inesperado durante o registro: {e}")
         return False
 
-def authenticate_user(username, password):
+def authenticate_user(username, master_password):
     """
     Autentica um usuário.
     Retorna o ID do usuário se a autenticação for bem-sucedida, caso contrário, None.
     """
     with get_db_cursor() as cursor:
-        password_hash = hash_password(password)
+        password_hash = hash_password(master_password)
         cursor.execute("SELECT id FROM users WHERE username = ? AND password_hash = ?", (username, password_hash))
-        user = cursor.fecthone()
-    if user:
-        return user[0]
-    return None
+        user_data = cursor.fecthone()
+    if user_data:
+        user_id, salt_hex = user_data
+        return user_id, bytes.fromhex(salt_hex) #Retorna ID e o salt como bytes
+    return None, None
 
 def save_generated_password(user_id, description, password):
     """Salva uma senha gerada para um usuário específico."""
     with get_db_cursor() as cursor:
-        cursor.execute("INSERT INTO generated_passwords (user_id, description, password) VALUES (?, ?, ?)",
-                        (user_id, description, password))
+        #Primeiro, obtenha o salt do usuário
+        cursor.execute("")
 
 def get_user_passwords(user_id):
     """Retorna todas as senhas geradas para um usuário específico."""
